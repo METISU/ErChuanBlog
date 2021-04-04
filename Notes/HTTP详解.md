@@ -31,7 +31,7 @@ URI是URL的超集，HTTP里面的网址实质上是URL。
 #### 格式
 URL的基本格式是
 
-![系统架构设计](https://user-images.githubusercontent.com/22512175/113471501-4a236580-948f-11eb-8c08-6587a0855a67.png)
+![系统架构设计 (4)](https://user-images.githubusercontent.com/22512175/113509617-30fedf80-9589-11eb-85ce-0ef850540546.png)
 
 * scheme：第一个部分为scheme，表示协议名，最常见的有http、https，另外还有比如ftp等
 

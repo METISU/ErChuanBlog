@@ -178,7 +178,7 @@ Cookie可以发送到的主机。
 
 * Path=<path-value> (Optional)
 
-路径必须包含在请求的URL中，否则浏览器不会发送Cookie头。以`\\`作为分隔符
+路径必须包含在请求的URL中，否则浏览器不会发送Cookie头。以`\`作为分隔符
 * Secure Optional
 
 

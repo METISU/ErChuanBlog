@@ -101,13 +101,13 @@ HTTP/1.1 304 Not Modified
 ```
 意识是说我是用的版本是HTTP/1.1，状态码是304，缓存还可使用。
 
-##### 头部字段集合
+#### 头部字段集合
 头部字段集合采用key: value的形式，形式非常自由，可以任意添加，但要注意以下几点：
 1. 字段名不区分大小写
 2. 字段名不能使用空格以及下划线"_"
 3. 字段名后面必须接":"，但是value前可以存在空格
 
-##### 消息体
+#### 消息体
 消息体的格式较多，一般较为常用的有以下几种
 * json格式传输，如{"input1":"xxx","input2":"ooo","input3":"aaa"}
 * key=value形式，多个字段使用&连接,如input1=xxx&input2=ooo&input3=aaa
@@ -154,7 +154,31 @@ Content-Range: bytes 4590-7999/8000
 
 ```
 
+### Cookie
+前面提到过HTTP是无状态的，那么遇到一些复杂的场景，比如用户鉴权之类的，就需要Cookie登场了。
+#### Cookie使用
+需要服务端发送`Set-Cookie`字段，客户端便会把响应的字段保存本地，下次再次请求相同服务，可以通过`Cookie`字段发送
+##### Set-Cookie
+###### Attributes
+* <cookie-name>=<cookie-value>
 
+Cookie以键值对开头
+* Expires=<date> (optional)
 
+Cookie的最长生存时间
+* Max-Age=<number> (optional)
+
+Cookie过期之前的秒数。零或负数将立即使cookie失效。如果同时设置`Expires`和`Max-Age`，则`Max-Age`具有优先级。
+* Domain=<domain-value> (Optional)
+
+Cookie可以发送到的主机。
+  - 如果省略，则默认当前域名，**且不保函子域**（参考MDN文档）
+  - 与早期规范相反，`.example.com`域名中的前倒点被忽略
+  - 多个`host/domain`不符合规范，但是如果该`domain`被包含，则其子域也被包含
+
+* Path=<path-value> (Optional)
+
+路径必须包含在请求的URL中，否则浏览器不会发送Cookie头。以`\\`作为分隔符
+* Secure Optional
 
 

@@ -102,9 +102,59 @@ HTTP/1.1 304 Not Modified
 意识是说我是用的版本是HTTP/1.1，状态码是304，缓存还可使用。
 
 ##### 头部字段集合
-头部字段集合采用key: value的形式，形式非常自由，可以任意添加，但要注意一下几点：
+头部字段集合采用key: value的形式，形式非常自由，可以任意添加，但要注意以下几点：
 1. 字段名不区分大小写
 2. 字段名不能使用空格以及下划线"_"
 3. 字段名后面必须接":"，但是value前可以存在空格
+
+##### 消息体
+消息体的格式较多，一般较为常用的有以下几种
+* json格式传输，如{"input1":"xxx","input2":"ooo","input3":"aaa"}
+* key=value形式，多个字段使用&连接,如input1=xxx&input2=ooo&input3=aaa
+* 分块传输，响应头需要添加字段Transfer-Encoding: chunked，格式为当前块的长度+换行`\r\n`+当前块内容+`\r\n`，终止块和常规块一样，但长度取为0
+
+> HTTP/2不支持分块传输，因为其提供了更有效的流传输机制。
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/plain
+Transfer-Encoding: chunked
+
+7\r\n
+Mozilla\r\n
+9\r\n
+Developer\r\n
+7\r\n
+Network\r\n
+0\r\n
+\r\n
+```
+* 范围请求（Partial Content）
+
+返回状态码为206 Partial Content
+如果包含多端数据则`Content-Type`设置为`multipart/byteranges`，并且每个片段是设置一个范围，使用`Content-Range`和`Content-Type`进行描述
+```
+HTTP/1.1 206 Partial Content
+Date: Wed, 15 Nov 2015 06:25:24 GMT
+Last-Modified: Wed, 15 Nov 2015 04:58:08 GMT
+Content-Length: 1741
+Content-Type: multipart/byteranges; boundary=String_separator
+
+--String_separator
+Content-Type: application/pdf
+Content-Range: bytes 234-639/8000
+
+...the first range...
+--String_separator
+Content-Type: application/pdf
+Content-Range: bytes 4590-7999/8000
+
+...the second range
+--String_separator--
+
+```
+
+
+
 
 

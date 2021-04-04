@@ -70,7 +70,8 @@ scheme之后必须跟随 ***特定字符://*** ，标志scheme结束
 
 ![WeChatWorkScreenshot_9c3d231a-b657-4273-8234-2f4084536a08 copy](https://user-images.githubusercontent.com/22512175/113504147-c9389c80-9568-11eb-8e3c-0f39cea2ad94.jpg)
 
-##### 请求行
+##### 起始行
+###### 请求行
 
 ![系统架构设计 (3)](https://user-images.githubusercontent.com/22512175/113499919-7cdf6380-954c-11eb-8468-3c92b6f61107.png)
 
@@ -85,7 +86,7 @@ GET /20-2 HTTP/1.0
 ```
 表示GET请求，获取/20-2下的资源，用HTTP1.1
 
-##### 状态行
+###### 状态行
 响应报文的起始行叫做状态行，同样也由三部分构成
 ![系统架构设计 (6)](https://user-images.githubusercontent.com/22512175/113510117-c4391480-958b-11eb-8ee8-43eb3b951ca0.png)
 * 版本号：表明使用的HTTP版本号
@@ -100,6 +101,10 @@ HTTP/1.1 304 Not Modified
 ```
 意识是说我是用的版本是HTTP/1.1，状态码是304，缓存还可使用。
 
-
+##### 头部字段集合
+头部字段集合采用key: value的形式，形式非常自由，可以任意添加，但要注意一下几点：
+1.字段名不区分大小写
+2.字段名不能使用空格以及下划线"_"
+3.字段名后面必须接":"，但是value前可以存在空格
 
 

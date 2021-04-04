@@ -62,7 +62,7 @@ scheme之后必须跟随 ***特定字符://*** ，标志scheme结束
 ![系统架构设计 (4)](https://user-images.githubusercontent.com/22512175/113509970-e67e6280-958a-11eb-9250-34f81ea42521.png)
 
 报文大致由3个部分组成
-1. 请求行：描述请求或响应的基本信息
+1. 起始行：描述请求或响应的基本信息
 2. 头部字段集合：一般为key-value集合详细说明报文
 3. 消息体：请求传输的数据结构
 
@@ -84,3 +84,21 @@ scheme之后必须跟随 ***特定字符://*** ，标志scheme结束
 GET /20-2 HTTP/1.0
 ```
 表示GET请求，获取/20-2下的资源，用HTTP1.1
+
+##### 状态行
+响应报文的起始行叫做状态行，同样也由三部分构成
+![系统架构设计 (6)](https://user-images.githubusercontent.com/22512175/113510117-c4391480-958b-11eb-8ee8-43eb3b951ca0.png)
+* 版本号：表明使用的HTTP版本号
+* 状态码：表示处理的结果，比较常见的就是我们最希望看到的200，表示成功
+* 原因：用来解释状态码，比如常见的Not Found
+
+<img width="917" alt="WeChatWorkScreenshot_122d5033-86fb-4339-b546-3214b070d675" src="https://user-images.githubusercontent.com/22512175/113510235-78d33600-958c-11eb-9fe5-5f47e7c0d06b.png">
+这边的状态行就是
+```
+HTTP/1.1 304 Not Modified
+```
+意识是说我是用的版本是HTTP/1.1，状态码是304，缓存还可使用。
+
+
+
+

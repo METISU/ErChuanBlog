@@ -94,6 +94,7 @@ GET /20-2 HTTP/1.0
 
 <img width="917" alt="WeChatWorkScreenshot_122d5033-86fb-4339-b546-3214b070d675" src="https://user-images.githubusercontent.com/22512175/113510235-78d33600-958c-11eb-9fe5-5f47e7c0d06b.png">
 这边的状态行就是
+
 ```
 HTTP/1.1 304 Not Modified
 ```

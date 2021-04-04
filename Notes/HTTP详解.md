@@ -34,24 +34,26 @@ URL的基本格式是
 
 ![系统架构设计](https://user-images.githubusercontent.com/22512175/113471501-4a236580-948f-11eb-8c08-6587a0855a67.png)
 
-第一个部分为scheme，表示协议名，最常见的有http、https，另外还有比如ftp等
+* scheme：第一个部分为scheme，表示协议名，最常见的有http、https，另外还有比如ftp等
+
 scheme之后必须跟随 ***特定字符://*** ，标志scheme结束
 
-之后是host+port组合，表示自愿所在的主机名。其中主机名必须要有，否则会找不到服务器，但是port可以省略，浏览器会根据scheme使用默认的端口，比如HTTP的80端口、HTTPS的443端口。
+* host:port：之后是host+port组合，表示自愿所在的主机名。其中主机名必须要有，否则会找不到服务器，但是port可以省略，浏览器会根据scheme使用默认的端口，比如HTTP的80端口、HTTPS的443端口。
 
-协议://主机名+端口之后，跟随的是path，即需要查找的资源的路径，如果在根目录可以省略。
+* path：协议://主机名+端口之后，跟随的是path，即需要查找的资源的路径，如果在根目录可以省略。
 
-协议名+主机+路径已经可以找到所有资源了，但是如果我们对于资源有一些要求，那这还不够。
+* query：协议名+主机+路径已经可以找到所有资源了，但是如果我们对于资源有一些要求，那这还不够。
 比如我们希望查询到的资源是按照ASCII排序、或者我们需要某种特定格式的资源，这样我们就得带上query查询参数。query从“?”开始，之后以***key=value***形式传递，比如Google的搜索https://www.google.com/search?q=http ，用于搜索包含HTTP的资源。
 
 以上为url的基本格式，也是目前大多数场景下应用的，但是url的完整形态还缺少user、password以及fragment
 
 ![系统架构设计 (1)](https://user-images.githubusercontent.com/22512175/113471566-d2096f80-948f-11eb-8451-f04163ee0cad.png)
 
-第一个多出的部分是用户名以及密码，但是因为把敏感信息用明文的形式暴露出来，这种方式基本被舍弃了。后续还增加了***fragment***，是定位内部资源的一个锚点，浏览器获取资源后可以跳转到想要的位置。
+* 其余：第一个多出的部分是用户名以及密码，但是因为把敏感信息用明文的形式暴露出来，这种方式基本被舍弃了。后续还增加了***fragment***，是定位内部资源的一个锚点，浏览器获取资源后可以跳转到想要的位置。
 比如
 [https://github.com/METISU/erChuanBlog/blob/main/Notes/HTTP详解.md#格式](https://github.com/METISU/erChuanBlog/blob/main/Notes/HTTP%E8%AF%A6%E8%A7%A3.md#%E6%A0%BC%E5%BC%8F)
 这个url点击后浏览器会直接定位到**格式**这一栏。
 
 #### 编码
-我们通常把url复制出来之后会看到里面有一堆乱码，比如上面的例子，**详解**变为了**乱码：%E8%AF%A6%E8%A7%A3.md#%E6%A0%BC%E5%BC%8F**，这是因为url里面只能使用ASCII码，
+我们通常把url复制出来之后会看到里面有一堆乱码，比如上面的例子，**详解**变为了**乱码：%E8%AF%A6%E8%A7%A3.md#%E6%A0%BC%E5%BC%8F**，这是因为url里面只能使用ASCII码，对于非ASCII码文字或者特殊字符采用转换成16进制值然后在前面加%。但是在Chrome等浏览器里面为了方便用户，地址栏是看不到转以后的乱码的。
+

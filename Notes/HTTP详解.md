@@ -170,11 +170,11 @@ Cookie的最长生存时间
 
 Cookie过期之前的秒数。零或负数将立即使cookie失效。如果同时设置`Expires`和`Max-Age`，则`Max-Age`具有优先级。
 * Domain=<domain-value> (Optional)
-
-Cookie可以发送到的主机。
-  - 如果省略，则默认当前域名，**且不保函子域**（参考MDN文档）
+  - 如果省略，则默认当前域名，**且不保函子域**（参考MDN文档）  
   - 与早期规范相反，`.example.com`域名中的前倒点被忽略
   - 多个`host/domain`不符合规范，但是如果该`domain`被包含，则其子域也被包含
+
+表示Cookie可以发送到的主机。
 
 * Path=<path-value> (Optional)
 

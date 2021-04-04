@@ -57,3 +57,30 @@ scheme之后必须跟随 ***特定字符://*** ，标志scheme结束
 #### 编码
 我们通常把url复制出来之后会看到里面有一堆乱码，比如上面的例子，**详解**变为了**乱码：%E8%AF%A6%E8%A7%A3.md#%E6%A0%BC%E5%BC%8F**，这是因为url里面只能使用ASCII码，对于非ASCII码文字或者特殊字符采用转换成16进制值然后在前面加%。但是在Chrome等浏览器里面为了方便用户，地址栏是看不到转以后的乱码的。
 
+### 报文
+#### 报文结构
+
+![系统架构设计 (2)](https://user-images.githubusercontent.com/22512175/113499721-bfa03c00-954a-11eb-9c5c-6705aa933ee3.png)
+
+报文大致由3个部分组成
+1. 请求行：描述请求或响应的基本信息
+2. 头部字段集合：一般为key-value集合详细说明报文
+3. 消息体：请求传输的数据结构
+
+< 注：header与body之前需要有一个空行分割，同时，可以没有body，但必须有header
+![WeChatWorkScreenshot_9c3d231a-b657-4273-8234-2f4084536a08 copy](https://user-images.githubusercontent.com/22512175/113504147-c9389c80-9568-11eb-8e3c-0f39cea2ad94.jpg)
+
+##### 请求行
+
+![系统架构设计 (3)](https://user-images.githubusercontent.com/22512175/113499919-7cdf6380-954c-11eb-8468-3c92b6f61107.png)
+
+请求行有三个部分组成
+* 请求方法：如GAE、POST等
+* 请求目标：要请求的目标资源
+* 版本号：标记使用的HTTP版本
+
+如上面Wireshark的抓包
+```
+GET /20-2 HTTP/1.0
+```
+表示GET请求，获取/20-2下的资源，用HTTP1.1

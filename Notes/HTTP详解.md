@@ -68,6 +68,7 @@ scheme之后必须跟随 ***特定字符://*** ，标志scheme结束
 3. 消息体：请求传输的数据结构
 
 > 注：header与body之前需要有一个空行分割，同时，可以没有body，但必须有header
+
 ![WeChatWorkScreenshot_9c3d231a-b657-4273-8234-2f4084536a08 copy](https://user-images.githubusercontent.com/22512175/113504147-c9389c80-9568-11eb-8e3c-0f39cea2ad94.jpg)
 
 ##### 请求行

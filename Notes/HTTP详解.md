@@ -298,6 +298,7 @@ TSL(Transport Layer Security)（以前称为SSL(Secure Sockets Layer)）是应�
 
 ### 握手
 到此可以讲解HTTPS的握手阶段了。
+
 ![系统架构设计 (7)](https://user-images.githubusercontent.com/22512175/113590596-709af980-9665-11eb-84fe-01c78157cc90.png)
 
 

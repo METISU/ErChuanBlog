@@ -178,7 +178,78 @@ Cookie过期之前的秒数。零或负数将立即使cookie失效。如果同�
 
 * Path=<path-value> (Optional)
 
-路径必须包含在请求的URL中，否则浏览器不会发送Cookie头。以`\`作为分隔符
-* Secure Optional
+路径必须包含在请求的URL中，否则浏览器不会发送Cookie头。以`\`作为分隔符，同时会包含子目录，如`Path=/docs`，则`/docs`、`/docs/Web/`以及`/docs/Web/HTTP`等都会被匹配。
+* Secure (Optional)
+
+Cookie仅会发送给使用HTTPS的服务，用于防护中间人攻击。
+* HttpOnly (Optional)
+
+禁止`JavaScript`使用如`Document.cookie`属性访问Cookie。
+* SameSite=<samesite-value> (Optional)
+
+控制跨域请求是否发送Cookie。
+
+### 缓存
+#### Cache-Control
+用于指定浏览器请求以及服务器响应中指定的缓存策略。
+##### 属性
+* public
+
+响应可以被任意对象存储（比如CDN）
+* private
+
+响应仅能被浏览器存储
+* no-cache
+
+客户端使用前必须现象服务端验证缓存是否过期。
+* no-store
+
+不允许缓存
+* max-age=<seconds>
+
+缓存保险时间。（注：这个时间不是客户端收到响应的时间，是服务器发出报文的时间。）
+* s-maxage=<seconds>
+
+覆盖`max-age`或者`Expires header`，仅用于缓存代理。
+* max-stale=<seconds>
+
+表示客户端接受有效期超出指定秒数的响应（常用与代理缓存的响应。）
+* min-fresh=<seconds>
+
+表示客户端希望响应至少在指定的秒数内仍旧有效。
+* stale-while-revalidate=<seconds>
+
+表示客户端可以接受效期超出指定秒数的响应，同时在后台查询是否有新的响应。
+* stale-if-error=<seconds>
+
+表示如果查询新的响应失败客户端可以接受超出指定秒数的响应。
+* must-revalidate
+
+表示缓存一旦过期，则需要去服务端验证才可使用。
+* proxy-revalidate
+
+类似于`must-revalidate`，但用于缓存代理。
+* immutable
+
+表示响应主体不会随时间变化。因此，客户端不应该发送`if-none-match`或者`If-Modified-Since`来检查是否更新。
+* no-transform
+
+不允许中间缓存编辑响应。
+* only-if-cached
+
+表示只接受中间缓存，如果没有缓存，则返回504。
+
+#### If-Modified-Since
+只有在服务器在传输的时间之后修改过资源，才会返回响应体以及200 OK，否则返回304并且没有响应体。（仅能用于GET或者HEAD请求。）
+
+#### Last-Modified
+包含原始服务器的资源上次修改的日期和时间。用于验证器接收与存储的资源是否相同。
+
+#### If-None-Match
+如果服务器没有`ETag`与发送的相匹配，则返回报文与200 OK，否则返回304 Not Modified。（注：`ETag`有强弱之分，`ETag`前面加`W/`表示使用弱比较算法，即如果两个文件内容相同则表示相同，不同字节层面的相同，比如仅有文件生成日期不同也表示两个文件相同。）
+
+#### ETag
+表示自愿特定版本的标识符，如果内容未发生更改，则web服务器不需要发送完整的响应。如果指定的URL资源发生改动，则需要生成新的`ETag`。
+
 
 

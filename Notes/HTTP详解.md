@@ -328,9 +328,7 @@ HTTPS解决了HTTP安全性的问题，但是性能问题没有解决，反而�
 HTTP/1.1可以压缩body，但是头部却不能压缩，而我们有很多的请求其实类似`GET`类型，没有body或者body很轻，HTTP/2针对这个现象采用`HPACK`算法进行了优化。
 基本原理：
 * 维护一份相同的静态表（Static Table），包含常见的头部名称，以及特别常见的头部名称与值的组合；
-  - 1.用于完全匹配的字段，比如`:method: GET`可以只发送`Key`，及一个数字即可；2.部分匹配可以发送头字段数字：value，如32表示Cookie，则可`32: xxxxxx`；
-  
-  > 完整静态表在[这里](https://httpwg.org/specs/rfc7541.html#static.table.definition)
+  - 1.用于完全匹配的字段，比如`:method: GET`可以只发送`Key`，及一个数字即可；2.部分匹配可以发送头字段数字：value，如32表示Cookie，则可用`32: xxxxxx`，完整静态表在[这里](https://httpwg.org/specs/rfc7541.html#static.table.definition)；
 * 维护一份相同的动态表（Dynamic Table），可以动态地添加内容；
   - 静态表中不存在的字段，可以更新到动态表中，下次只用发送一个编码就行。
 * 支持基于静态哈夫曼码表的哈夫曼编码（Huffman Coding）

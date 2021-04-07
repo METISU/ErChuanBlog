@@ -334,6 +334,46 @@ TSL(Transport Layer Security)（以前称为SSL(Secure Sockets Layer)）是应�
 6. 开始对称加密通信。
 > 为啥需要三个随机数：SSL协议不信任每个主机都能产生完全随机的随机数，因此引入三个随机数，三个随机数生成的秘钥随机度就非常高了。如果使用`ECDHE`秘钥交换算法，保密度更高，并且支持**前向安全**。
 
+### TLS1.3
+从上文可知，`HTTPS`握手会消耗大量的时间，我们可以对其进行优化
+TLS1.3主要升级项：
+* 添加了0-RTT模式。
+* 静态RSA和Diffie-Helman密码套件已被删除。
+* ServerHello之后的所有握手消息都已加密。
+* 新增了一些新的密码套件（Curve 25519 和 448）。
+* 删除了MD5、SHA1
+
+#### 性能提升
+##### 1-RTT
+由于`TLS1.3`大幅简化了密码套件，客户端可以再第一个`Client Hello`里面带上以及支持的密码套件以及公钥、对应的签名算法，这样只需一个RTT，就完成了秘钥交换。
+
+![系统架构设计 (8)](https://user-images.githubusercontent.com/22512175/113799471-b819a680-9787-11eb-81df-51c002625e37.png)
+
+1.客户端Hello
+  - 客户端随机数
+  - supported_versions附带TLS1.3
+  - signature_algorithms附带签名算法
+  - supported_groups附带`DHE`或者`ECDHE`秘钥交换算法
+  - key_share附带秘钥参数
+
+2. 服务端Hello
+  - 服务端随机数
+  - supported_versions确认使用TLS版本
+  - Encrypted Extensions附带服务端扩展（详见[这里](https://tools.ietf.org/html/rfc8446#page-60)）
+  - Server Certificate附带服务端证书
+  - Server Certificate Verify附带前面数据使用服务端私钥做的签名，加强身份认证
+
+3. 客户端收到数据，机密通讯开始
+
+< 注：TLS1.3基本采用椭圆曲线特性加密，第二部服务端收到客户端**椭圆曲线的公钥**，然后用自己的**椭圆曲线的公钥**进行计算，可以算出第三个随机数`Pre-Master`，就可以生成主密钥，客户端同理，收到服务端回信也可生成主密钥。
+< 注2：椭圆曲线计算`Pre-Master`流程大致如下：
+1. 客户端随机生成随机值Ra，计算Pa(x, y) = Ra * Q(x, y)，Q(x, y)为全世界公认的某个椭圆曲线算法的基点。将Pa(x, y)发送至服务器。
+2. 服务器随机生成随机值Rb，计算Pb(x,y) = Rb * Q(x, y)。将Pb(x, y)发送至客户端。
+3. 客户端计算Sa(x, y) = Ra * Pb(x, y)；服务器计算Sb(x, y) = Rb *Pa(x, y)
+4. 算法保证了Sa = Sb = S，提取其中的S的x向量作为密钥（预主密钥）。
+这样的流程可以保证即便黑客破解客户端随机数以及服务端随机数也无法计算出`Pre-Master`
+摘自：[TLS/SSL 协议详解 (30) SSL中的RSA、DHE、ECDHE、ECDH流程与区别](https://blog.csdn.net/mrpre/article/details/78025940)
+
 ***
 
 ## HTTP/2

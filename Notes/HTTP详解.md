@@ -263,7 +263,7 @@ Cookie仅会发送给使用HTTPS的服务，用于防护中间人攻击。
 ***
 
 ## HTTPS
-前文可以知道，HTTP是明文传输，这种状态等于在不安全的网络环境里面进行裸奔，如果被有心之人窃取到一些重要信息那就比较麻烦，因此需要引入**HTTPS (HyperText Transfer Protocol Secure) **。
+前文可以知道，HTTP是明文传输，这种状态等于在不安全的网络环境里面进行裸奔，如果被有心之人窃取到一些重要信息那就比较麻烦，因此需要引入**HTTPS (HyperText Transfer Protocol Secure)**。
 ### SSL/TLS
 
 HTTPS的关键在于S，前文我们可以知道HTTP运行于TCP协议上，那HTTPS则是运行于SSL/TLS的HTTP协议。

@@ -135,6 +135,7 @@ NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际In
    - 完整消息转发: Normal Forwarding
 5. 报错
 
+![消息转发流程](https://user-images.githubusercontent.com/22512175/115216191-d643b700-a136-11eb-9089-465686943f6b.png)
 
 
 

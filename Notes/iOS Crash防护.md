@@ -6,7 +6,7 @@ App Crash是大多数开发者都头疼的事情，尤其是如果线上出现�
 
 ### 方案
 通过`method swizzling`替换关键方法，然后在方法中加入防护措施
-例如
+
 ```Objective-C
 Class __NSPlaceholderDictionary = objc_getClass("__NSPlaceholderDictionary");
 [self crashProtector_swizzleInstanceMethodWithAClass:__NSPlaceholderDictionary originalSel:@selector(initWithObjects:forKeys:count:) swizzledSel:@selector(crashProtector_initWithObjects:forKeys:count:)];
@@ -48,13 +48,13 @@ Class __NSPlaceholderDictionary = objc_getClass("__NSPlaceholderDictionary");
 String的思路和容器类类似，采取`method swizzling`替换管家方法。
 
 ### 方案
-例：
+首先替换相关方法
 ```Objective-C
 Class __NSCFConstantString = objc_getClass("__NSCFString");
 [self crashProtector_swizzleInstanceMethodWithAClass:__NSCFConstantString originalSel:@selector(stringByReplacingCharactersInRange:withString:) swizzledSel:@selector(crashProtector_stringByReplacingCharactersInRange:withString:)];
 ```
 
-首先替换相关方法
+同样通过`try-catch`捕获异常抛给上层处理，如果有一场发生返回自己，没有异常则返回对应字符串。
 
 ```Objective-C
 - (NSString *)crashProtector_stringByReplacingCharactersInRange:(NSRange)range withString:(NSString *)replacement {
@@ -74,6 +74,6 @@ Class __NSCFConstantString = objc_getClass("__NSCFString");
 }
 ```
 
-同样通过`try-catch`捕获异常抛给上层处理，如果有一场发生返回自己，没有异常则返回对应字符串。（具体效果建议和产品经理进行商讨）
+> 注：具体效果建议和产品经理进行商讨
 
 

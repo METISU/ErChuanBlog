@@ -152,6 +152,7 @@ Class __NSObject = objc_getClass("NSObject");
 ``` 
 
 然后实现自己的处理逻辑
+
 ```Objective-C
 - (NSMethodSignature *)crashProtector_methodSignatureForSelector:(SEL)aSelector {
     NSMethodSignature *signature = [self crashProtector_methodSignatureForSelector:aSelector];
@@ -173,7 +174,7 @@ Class __NSObject = objc_getClass("NSObject");
 }
 ```
 
-> 对于最后一步，这边直接`try-catch`，感觉可以选择将消息转发给代理，这样不会造成Crash，同时创建一个异常抛给上层。
+> 对于最后一步，这边直接`try-catch`是比较偷懒的写法，感觉可以选择将消息转发给代理，这样不会造成Crash，同时创建一个异常抛给上层。
 
 
 

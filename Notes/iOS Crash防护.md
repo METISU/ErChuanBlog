@@ -79,7 +79,7 @@ Class __NSCFConstantString = objc_getClass("__NSCFString");
 ## NSTimer
 NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际Invalidate timer，则会造成Target无法释放，造成内存泄漏，甚至于由于不停的执行IMP，可能会造成Crash。
 
- ### 方法
+ ### 方案
  ![未命名文件](https://user-images.githubusercontent.com/22512175/115207981-b01a1900-a12e-11eb-85e0-4c62fd758ef0.png)
  
  我们可以看到，原先的逻辑NSTimer强引用了Target，导致NSTimer不释放，Target就不能释放，基于此，我们可以使用弱引用的方式，加一个中间层，弱引用Target，通过Proxy调用Target的方法，同时持有timer，如果发现Target为空，则`Invalidate timer`。

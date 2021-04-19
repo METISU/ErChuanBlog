@@ -174,14 +174,149 @@ Class __NSObject = objc_getClass("NSObject");
 }
 ```
 
-> 对于最后一步，这边直接`try-catch`是比较偷懒的写法，感觉可以选择将消息转发给代理，这样不会造成Crash，同时创建一个异常抛给上层。
+> 对于最后一步，这边直接`try-catch`是比较偷懒的写法，可以选择将消息转发给代理，这样不会造成Crash，同时创建一个异常抛给上层。
 
+## KVO
+KVO存在的问题主要有
+* 重复添加观察者（虽然不会crash，但是如果属性修改会通知两次）
+* 重复移除观察者crash
+* 未移除观察者但是但是被观察者dealloc
+* 未实现`-observeValueForKeyPath:ofObject:change:context:`
 
+### 方案
+同样可以增加一个中间层来解决这个问题。
 
+![KVO解决方案](https://user-images.githubusercontent.com/22512175/115258303-731c4980-a163-11eb-880d-8dd9c9ef4dd2.png)
 
+这样可以做到add以及remove去重，因为都在Proxy中进行，同时调用`-observeValueForKeyPath:ofObject:change:context:`通知观察者，可以捕获观察者未实现该方法的错误，抛给上层报警。
 
+```Objective-C
+Class __NSObject = objc_getClass("NSObject");
 
- 
+[self crashProtector_swizzleInstanceMethodWithAClass:__NSObject originalSel:@selector(addObserver:forKeyPath:options:context:) swizzledSel:@selector(crashProtector_addObserver:forKeyPath:options:context:)];
+[self crashProtector_swizzleInstanceMethodWithAClass:__NSObject originalSel:@selector(removeObserver:forKeyPath:) swizzledSel:@selector(crashProtector_removeObserver:forKeyPath:)];
+[self crashProtector_swizzleInstanceMethodWithAClass:__NSObject originalSel:NSSelectorFromString(@"dealloc") swizzledSel:@selector(crashProtector_dealloc)];
+```
+
+之后实现对应方法，使用代理通过`Dictionary`管理自身的观察者，并做到去重。同时`swizzle dealloc`判断是否有观察者未移除，如果发现则进行移除。
+
+```Objective-C
+- (void)crashProtector_addObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath options:(NSKeyValueObservingOptions)options context:(void *)context {
+    @try {
+        objc_setAssociatedObject(self, crashProtector_KVODefenderKey, crashProtector_KVODefenderValue, OBJC_ASSOCIATION_RETAIN);
+        if ([self.kvoProxy addMapInfoWithObserver:observer forKeyPath:keyPath]) {
+            [self crashProtector_addObserver:self.kvoProxy forKeyPath:keyPath options:options context:context];
+        }
+    } @catch (NSException *exception) {
+        [CrashProtector dealWithException:exception];
+    } @finally {
+        
+    }
+}
+
+- (void)crashProtector_removeObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath {
+    @try {
+        [self crashProtector_removeObserver:self.kvoProxy forKeyPath:keyPath];
+    } @catch (NSException *exception) {
+        [CrashProtector dealWithException:exception];
+    } @finally {
+        if (!isSystemClass(self.class)) {
+            [self.kvoProxy removeMapInfoObserver:observer forKeyPath:keyPath];
+        }
+    }
+}
+
+- (void)crashProtector_dealloc {
+    if (!isSystemClass(self.class)) {
+        if ([(NSString *)objc_getAssociatedObject(self, crashProtector_KVODefenderKey) isEqualToString:crashProtector_KVODefenderValue]) {
+            if (self.kvoProxy.infoDic.allKeys.count > 0) {
+                for (NSString *keyPath in self.kvoProxy.infoDic.allKeys) {
+                    [self removeObserver:self.kvoProxy forKeyPath:keyPath];
+                }
+            }
+        }
+   [self crashProtector_dealloc];
+}
+```
+
+实现代理类，添加字典保存观察者以及把方法抛出去，字典的`key`为`keyPath`，`value`为`HashTable`，存储`observer`，同时对于相同`keyPath`进行判断，如果存在相同`observer`，则`return`，返回No，不会再添加，删除时也一样，不过删除没有解决异常，还是交给`try-catch`，也是偷懒的写法，可以解决异常然后自己创造`exception`抛给上层，同时接到通知调用`observer`的`-observeValueForKeyPath:ofObject:change:context:`处理业务逻辑。
+
+```Objective-C
+@interface CrashProtector_KVOProxy : NSObject
+
+@property (nonatomic, strong) NSMutableDictionary *infoDic;
+
+@end
+
+@implementation CrashProtector_KVOProxy
+
+- (instancetype)init {
+    if (self = [super init]) {
+        self.infoDic = NSMutableDictionary.new;
+    }
+    
+    return self;
+}
+
+- (BOOL)addMapInfoWithObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath {
+    @synchronized (self) {
+        if (keyPath.length == 0) {
+            // 返回YES走try catch，把错误抛出去
+            return YES;
+        }
+        if ([self.infoDic.allKeys containsObject:keyPath]) {
+            if ([self.infoDic[keyPath] containsObject:observer]) {
+                return NO;
+            }
+            
+            NSHashTable *table = self.infoDic[keyPath];
+            if (table.count > 0) {
+                if (![table containsObject:observer]) {
+                    [table addObject:observer];
+                    return NO;
+                }
+            }
+        }
+        
+        
+        NSHashTable *table = [[NSHashTable alloc] initWithOptions:NSPointerFunctionsWeakMemory capacity:3];
+        [table addObject:observer];
+        self.infoDic[keyPath] = table;
+        
+        return YES;
+    }
+}
+
+- (void)removeMapInfoObserver:(NSObject *)observer forKeyPath:(NSString *)keyPath {
+    @synchronized (self) {
+        NSHashTable *table = self.infoDic[keyPath];
+        if (table) {
+            [table removeObject:observer];
+            if (table.count == 0) {
+                [self.infoDic removeObjectForKey:keyPath];
+            }
+        }
+    }
+}
+
+- (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
+{
+    NSHashTable *info = self.infoDic[keyPath];
+    for (NSObject *object in info) {
+        @try {
+            if ([object respondsToSelector:@selector(observeValueForKeyPath:ofObject:change:context:)]) {
+                [object observeValueForKeyPath:keyPath ofObject:object change:change context:context];
+            }
+        } @catch (NSException *exception) {
+            [CrashProtector dealWithException:exception];
+        } @finally {
+            
+        }
+    }
+}
+```
+
+ > 相关操作注意线程安全
  
  
  

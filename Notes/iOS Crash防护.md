@@ -76,4 +76,61 @@ Class __NSCFConstantString = objc_getClass("__NSCFString");
 
 > 注：具体效果建议和产品经理进行商讨
 
+## NSTimer
+NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际Invalidate timer，则会造成Target无法释放，造成内存泄漏，甚至于由于不停的执行IMP，可能会造成Crash。
 
+ ### 方法
+ ![未命名文件](https://user-images.githubusercontent.com/22512175/115207981-b01a1900-a12e-11eb-85e0-4c62fd758ef0.png)
+ 
+ 我们可以看到，原先的逻辑NSTimer强引用了Target，导致NSTimer不释放，Target就不能释放，基于此，我们可以使用弱引用的方式，加一个中间层，弱引用Target，通过Proxy调用Target的方法，同时持有timer，如果发现Target为空，则`Invalidate timer`。
+ 
+ ![未命名文件 (1)](https://user-images.githubusercontent.com/22512175/115208420-1f900880-a12f-11eb-8fa2-018b7db8cae6.png)
+
+首先`swizzle scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:`
+```Objective-C
+ Class __NSTimer = object_getClass(NSTimer.class);
+    
+ [self crashProtector_swizzleInstanceMethodWithAClass:__NSTimer originalSel:@selector(scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:) swizzledSel:@selector(crashProtector_scheduledTimerWithTimeInterval:target:selector:userInfo:repeats:)];
+    
++ (NSTimer *)crashProtector_scheduledTimerWithTimeInterval:(NSTimeInterval)ti target:(id)aTarget selector:(SEL)aSelector userInfo:(id)userInfo repeats:(BOOL)yesOrNo {
+    NSTimer *timer;
+    if (yesOrNo) {
+        CrashProtectorProxy *proxy = [CrashProtectorProxy subTargetWithTarget:aTarget selector:aSelector userInfo:userInfo];
+        timer = [NSTimer crashProtector_scheduledTimerWithTimeInterval:ti target:proxy selector:@selector(fireProxyTimer) userInfo:userInfo repeats:yesOrNo];
+        proxy.timer = timer;
+    } else {
+        timer = [NSTimer crashProtector_scheduledTimerWithTimeInterval:ti target:aTarget selector:aSelector userInfo:userInfo repeats:yesOrNo];
+    }
+    
+    return timer;
+} 
+ ```
+ 
+同时代理中调用函数`fireProxyTimer`保证Target被释放了之后停止timer
+```Objective-C
+- (void)fireProxyTimer {
+    if (self.aTarget) {
+        if ([self.aTarget respondsToSelector:self.aSelector]) {
+            [self.aTarget performSelector:self.aSelector withObject:self.timer];
+        }
+    } else {
+        [self.timer invalidate];
+    }
+}
+```
+
+这样Target便不会受到timer的制约，即便timer没有释放也会跟随自己的生命周期释放，同时释放了时候确保方法不会继续调用。
+
+
+
+
+
+
+
+
+
+
+ 
+ 
+ 
+ 

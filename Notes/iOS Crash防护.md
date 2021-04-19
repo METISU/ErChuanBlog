@@ -137,9 +137,43 @@ NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际In
 
 ![消息转发流程](https://user-images.githubusercontent.com/22512175/115216191-d643b700-a136-11eb-9089-465686943f6b.png)
 
+可见，即便本类以及父类找不到对应的实现，有3步可供我们进行补救。
 
+### 方案
+选择了再第三步进行了拦截，因为在这一步已经确定**消息是否有对象进行处理**，不会影响别的消息流程。
 
+首先还是先`swizzle`
 
+```Objective-C
+Class __NSObject = objc_getClass("NSObject");
+
+[self crashProtector_swizzleInstanceMethodWithAClass:__NSObject originalSel:@selector(methodSignatureForSelector:) swizzledSel:@selector(crashProtector_methodSignatureForSelector:)];
+[self crashProtector_swizzleInstanceMethodWithAClass:__NSObject originalSel:@selector(forwardInvocation:) swizzledSel:@selector(crashProtector_forwardInvocation:)];
+``` 
+
+然后实现自己的处理逻辑
+```Objective-C
+- (NSMethodSignature *)crashProtector_methodSignatureForSelector:(SEL)aSelector {
+    NSMethodSignature *signature = [self crashProtector_methodSignatureForSelector:aSelector];
+    if (!signature) {
+        signature = [NSMethodSignature signatureWithObjCTypes:"v@:"];
+    }
+    
+    return signature;
+}
+
+- (void)crashProtector_forwardInvocation:(NSInvocation *)anInvocation {
+    @try {
+        [self crashProtector_forwardInvocation:anInvocation];
+    } @catch (NSException *exception) {
+        [CrashProtector dealWithException:exception];
+    } @finally {
+
+    }
+}
+```
+
+> 对于最后一步，这边直接`try-catch`，感觉可以选择将消息转发给代理，这样不会造成Crash，同时创建一个异常抛给上层。
 
 
 

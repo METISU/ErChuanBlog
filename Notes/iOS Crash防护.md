@@ -107,6 +107,7 @@ NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际In
  ```
  
 同时代理中调用函数`fireProxyTimer`保证Target被释放了之后停止timer
+
 ```Objective-C
 - (void)fireProxyTimer {
     if (self.aTarget) {
@@ -121,6 +122,20 @@ NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际In
 
 这样Target便不会受到timer的制约，即便timer没有释放也会跟随自己的生命周期释放，同时释放了时候确保方法不会继续调用。
 
+## unrecognized selector crash
+`unrecognized selector crash`Crash大家都熟悉，原因是消息转发机制中走到最后一步也没有找到对应的实现，导致Crash，知道了这一点，我们可以截取其中一个流程，对于没有处理的消息进行容错，同时把Crash报给上层。
+
+### 消息转发机制
+1. 从cache里查找IMP，如果找到了就运行对应的函数去执行相应的代码。
+2. 如果cache中没有找到就找类的方法列表中是否有对应的方法，查到则缓存。
+3. 如果类的方法列表中找不到就到父类的方法列表中查找，一直找到NSObject类为止。
+4. 进入消息转发机制
+   - 动态方法解析: Method Resolution
+   - 快速转发: Fast Rorwarding
+   - 完整消息转发: Normal Forwarding
+5. 报错
+
+
 
 
 
@@ -134,3 +149,6 @@ NSTimer的问题在于Timer会强引用Target，如果没有在合适的实际In
  
  
  
+
+
+

@@ -317,8 +317,54 @@ Class __NSObject = objc_getClass("NSObject");
 
  > 相关操作注意线程安全
  
+ ## 野指针
+ 野指针的定义是如果指针指向的内存地址已被回收，但是该指针仍然指向这个地址。
  
+ 野指针的问题一般较难调试，因为不好复现并且提供的日志信息比较有限。Xcode提供了一种定位野指针的方法-**Zombie Object**
  
+ ![Zombie Object](https://user-images.githubusercontent.com/22512175/115373102-2043a000-a1fe-11eb-8fa3-9f54108b9de1.png)
 
+这就给我们提供了思路，在线上提供类似于`Zombie`的机制，可以补货异常并不造成崩溃。
 
+### 方案
+`swizzle dealloc`，将对象的`isa`指向动态生成的**僵尸类**，然后可以通过截取字符串获取原始类名（因为僵尸类是动态生成的，即为原始类名加上`_CrashProtecotrZoombie_`前缀），最后一步就是前面消息的拦截，阻止`Crash`，然后设定僵尸类的存储空间，防止太多类没释放触发`OOM`。
+ 
+```Objective-C
+- (void)handleDeallocObject:(__unsafe_unretained id)object {
+    // 指向动态生成的类，用 _CrashProtecotrZoombie_ 拼接原有类名
+    const char *clsName = class_getName(object_getClass(object));
+    const char *zoombizPrx = "_CrashProtecotrZoombie_";
+    char buff[1024];
+    const char *zombieClassName = strcat(strcpy(buff, zoombizPrx), clsName);
 
+    Class zombieCls = objc_lookUpClass(zombieClassName);
+    if(zombieCls) return;
+    zombieCls = objc_allocateClassPair([NSObject class], zombieClassName, 0);;
+    
+    objc_registerClassPair(zombieCls);
+    
+    class_addMethod([zombieCls class], @selector(forwardingTargetForSelector:), (IMP)forwardingTargetForSelector, "v@:@");
+    
+    object_setClass(object, zombieCls);
+    if (_zombieList.count < 10) {
+        [_zombieList addObject:object];
+    } else {
+        id _object = _zombieList.firstObject;
+        [_zombieList removeObject:_object];
+        if ([_object respondsToSelector:@selector(crashProtector_dealloc)]) {
+            [_object performSelector:@selector(crashProtector_dealloc)];
+        }
+        
+        [_zombieList addObject:object];
+    }
+}
+
+void forwardingTargetForSelector(id object, SEL _cmd, SEL aSelector) {
+    NSString *className = NSStringFromClass([object class]);
+    NSString *realClass = [className stringByReplacingOccurrencesOfString:@"_CrashProtecotrZoombie_" withString:@""];
+
+    NSLog(@"[%@ %@] message sent to deallocated instance %@", realClass, NSStringFromSelector(aSelector), object);
+}
+```
+
+[DEMO](https://github.com/METISU/CrashProtector)

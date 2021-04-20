@@ -227,14 +227,13 @@ Class __NSObject = objc_getClass("NSObject");
 }
 
 - (void)crashProtector_dealloc {
-    if (!isSystemClass(self.class)) {
-        if ([(NSString *)objc_getAssociatedObject(self, crashProtector_KVODefenderKey) isEqualToString:crashProtector_KVODefenderValue]) {
-            if (self.kvoProxy.infoDic.allKeys.count > 0) {
-                for (NSString *keyPath in self.kvoProxy.infoDic.allKeys) {
-                    [self removeObserver:self.kvoProxy forKeyPath:keyPath];
-                }
+    if ([(NSString *)objc_getAssociatedObject(self, crashProtector_KVODefenderKey) isEqualToString:crashProtector_KVODefenderValue]) {
+        if (self.kvoProxy.infoDic.allKeys.count > 0) {
+            for (NSString *keyPath in self.kvoProxy.infoDic.allKeys) {
+                [self removeObserver:self.kvoProxy forKeyPath:keyPath];
             }
         }
+    }
    [self crashProtector_dealloc];
 }
 ```

@@ -45,7 +45,7 @@ Class __NSPlaceholderDictionary = objc_getClass("__NSPlaceholderDictionary");
 > Objective-C的容器类大多采用**类簇**的形式，因此需要找到对应的类。
 
 ## NSString、NSAttributedString等String类
-String的思路和容器类类似，采取`method swizzling`替换管家方法。
+String的思路和容器类类似，采取`method swizzling`替换关键方法。
 
 ### 方案
 首先替换相关方法

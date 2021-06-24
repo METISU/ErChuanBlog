@@ -476,6 +476,23 @@ Summary: UIKitCore`UIDebuggingOverlayIsEnabled.__overlayIsEnabled
 <img src="https://user-images.githubusercontent.com/22512175/123213995-47b63200-d4f9-11eb-902a-c62f54ac4190.png" align="left" width="300" alt="image" />
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 > 注：上述说先不关心`_UIGetDebuggingOverlayEnabled`，是因为在iOS14下进行反编译的时候发现`prepareDebuggingOverlay`函数几乎不做事了，在iOS12下通过`mem write`命令直接改写内存可以实现效果，即调用prepareDebuggingOverlay就行，iOS14不行。
 
 > 以上汇编在Mac x86_64架构上进行

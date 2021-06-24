@@ -479,6 +479,4 @@ Summary: UIKitCore`UIDebuggingOverlayIsEnabled.__overlayIsEnabled
 
 > 以上汇编在Mac x86_64架构上进行
 
-# demo
-
-  
+[demo在这里](https://github.com/METISU/UIDebuggingInformationOverlayTest)

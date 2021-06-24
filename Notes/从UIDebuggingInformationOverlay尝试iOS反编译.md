@@ -197,8 +197,6 @@ rax为返回值寄存器，调用`_UIGetDebuggingOverlayEnabled`返回到rax，�
 
 可以看到核心是先看`UIDebuggingInformationOverlayInvokeGestureHandler`这个类，通过这个类去创建一个手势，手势的调用。
 
-
-
 # UIDebuggingInformationOverlayInvokeGestureHandler
 
 前面可以看到`UIDebuggingInformationOverlayInvokeGestureHandler`类的关键方法是`_handleActivationGesture`，同样，进行反编译`disassemble -n "-[UIDebuggingInformationOverlayInvokeGestureHandler _handleActivationGesture:]"`

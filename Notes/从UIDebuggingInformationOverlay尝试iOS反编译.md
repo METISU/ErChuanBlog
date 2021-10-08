@@ -110,6 +110,7 @@ rax为返回值寄存器，调用`_UIGetDebuggingOverlayEnabled`返回到rax，�
     UIView *statusView = [UIApp statusBarWindow];	②
     UIDebuggingInformationOverlayInvokeGestureHandler *hander = [UIDebuggingInformationOverlayInvokeGestureHandler mainHandler]; ③
     UITapGestureRecognizer *ges = [[UITapGestureRecognizer alloc] initWithTarget:hander action:@selector(_handleActivationGesture:)]; ④
+    [ges setDelegate:hander];
     [ges setNumberOfTouchesRequired:2]; ⑤
     [ges setNumberOfTapsRequired:1]; ⑥
     [statusView addGestureRecognizer:ges]; ⑦

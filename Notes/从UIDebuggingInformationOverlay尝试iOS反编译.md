@@ -160,7 +160,7 @@ rax为返回值寄存器，调用`_UIGetDebuggingOverlayEnabled`返回到rax，�
    ```
 
    ``` assembly
-   // [UITapGestureRecognizer alloc]返回值移入rdi，"initWithTarget:action:"为SEL移入rsi，前面[UIDebuggingInformationOverlayInvokeGestureHandler mainHandler]的返回值存储在rax未动，移入rdi，"_handleActivationGesture:"这个SEL作为第四个参数移入rcx，调用，返回值存储于r12
+   // [UITapGestureRecognizer alloc]返回值移入rdi，"initWithTarget:action:"为SEL移入rsi，前面[UIDebuggingInformationOverlayInvokeGestureHandler mainHandler]的返回值存储在rax未动，移入rdx，"_handleActivationGesture:"这个SEL作为第四个参数移入rcx，调用，返回值存储于r12
    0x10db74939 <+117>: mov    rcx, qword ptr [rip + 0x9413f8] ; "_handleActivationGesture:"
    0x10db74940 <+124>: mov    rsi, qword ptr [rip + 0x9009d1] ; "initWithTarget:action:"
    0x10db74947 <+131>: mov    rdi, r12

@@ -14,12 +14,9 @@ Mach-O是基于Mach内核的操作系统（例如iOS、macOS等）上的一种�
 
 ## Mach-O Header
 
-首先进入 **mach-o/loader.h** ，
+首先进入 **mach-o/loader.h** 
 
 ``` C
-#define	MH_MAGIC	0xfeedface	/* the mach magic number */
-#define MH_CIGAM	0xcefaedfe /* NXSwapInt(MH_MAGIC) */
-
 /*
  * The 32-bit mach header appears at the very beginning of the object file for
  * 32-bit architectures.
@@ -33,6 +30,10 @@ struct mach_header {
 	uint32_t	sizeofcmds;	/* the size of all the load commands */
 	uint32_t	flags;		/* flags */
 };
+
+/* Constant for the magic field of the mach_header (32-bit architectures) */
+#define	MH_MAGIC	0xfeedface	/* the mach magic number */
+#define MH_CIGAM	0xcefaedfe	/* NXSwapInt(MH_MAGIC) */
 
 /*
  * The 64-bit mach header appears at the very beginning of object files for
@@ -49,3 +50,9 @@ struct mach_header_64 {
 	uint32_t	reserved;	/* reserved */
 };
 
+/* Constant for the magic field of the mach_header_64 (64-bit architectures) */
+#define MH_MAGIC_64 0xfeedfacf /* the 64-bit mach magic number */
+#define MH_CIGAM_64 0xcffaedfe /* NXSwapInt(MH_MAGIC_64) */
+```
+
+可见有两种类型的Mach-O Header，通过magic区分

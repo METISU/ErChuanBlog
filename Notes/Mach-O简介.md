@@ -14,7 +14,7 @@ Mach-O是基于Mach内核的操作系统（例如iOS、macOS等）上的一种�
 
 ## Mach-O Header
 
-首先进入 **mach-o/loader.h** 
+在 **mach-o/loader.h** 中可见mach_header申明
 
 ``` C
 /*
@@ -55,4 +55,13 @@ struct mach_header_64 {
 #define MH_CIGAM_64 0xcffaedfe /* NXSwapInt(MH_MAGIC_64) */
 ```
 
-可见有两种类型的Mach-O Header，通过magic区分
+* magic：表示当前Mach-O运行的架构，32位的是0xfeedface、0xcefaedfe，64位的是0xfeedfacf、0xcffaedfe（有大小端之分）
+* cputype、cpusubtype：表示当前的Mach-O支持的CPU类型，在mach/machine.h头文件中可见
+* filetype：表示当前文件的类型，如`#define	MH_OBJECT	0x1		/* relocatable object file */`等
+* ncmds、sizeofcmds：load commands 的条数以及大小
+
+下面看一个Mach-O头文件的内容
+
+![image](https://user-images.githubusercontent.com/22512175/147267528-27d458be-897e-40b9-bc5c-5f5e1d5f1b9d.png)
+
+可见这个Mach-O为64位，可运行于x86_64 cpu架构，是一个可执行文件

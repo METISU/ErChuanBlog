@@ -115,4 +115,22 @@ fat_arch则描述了这个fat Mach-O里面有哪几种CPU架构等，以及该�
 图片该Far Header集成了两种Mach-O，一种是x86_64的，还有ARM64的（ARM的cupsubtype是80000002）
 
 ## Load Commands
+Load Commands在Mach-O Header之后，提供了如何将文件加载如内存的指令，可在**mach-o/loader.h**中进行查看
+
+每个load command前两个字段必须是 cmd 和 cmdsize
+
+``` C
+struct load_command {
+	uint32_t cmd;		/* type of load command */
+	uint32_t cmdsize;	/* total size of command in bytes */
+};
+```
+
+> 每个load command都有自己的结构体，但是Mach-O的作者提供的一个通用的结构体
+
+从注释中可以看出，如果知道了cmd，就能知道这是哪个类型的load command，也就能转换成响应的load command了
+
+## Segments && Section
+
+
 

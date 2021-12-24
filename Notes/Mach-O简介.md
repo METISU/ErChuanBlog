@@ -62,6 +62,6 @@ struct mach_header_64 {
 
 下面看一个Mach-O头文件的内容
 
-![Mach-O](https://user-images.githubusercontent.com/22512175/147305190-02601a1c-d0ec-4b99-8320-deb8ed32d826.png)
+![Mach-O](https://user-images.githubusercontent.com/22512175/147305261-e011d0c3-b6c8-409a-af86-83a431ed7cf6.png)
 
 可见这个Mach-O为64位，可运行于x86_64 cpu架构，是一个可执行文件

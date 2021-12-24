@@ -87,6 +87,13 @@ struct fat_arch {
 	uint32_t	align;		/* alignment as a power of 2 */
 };
 
+/*
+ * The support for the 64-bit fat file format described here is a work in
+ * progress and not yet fully supported in all the Apple Developer Tools.
+ *
+ * When a slice is greater than 4mb or an offset to a slice is greater than 4mb
+ * then the 64-bit fat file format is used.
+ */
 #define FAT_MAGIC_64	0xcafebabf
 #define FAT_CIGAM_64	0xbfbafeca	/* NXSwapLong(FAT_MAGIC_64) */
 
@@ -101,8 +108,11 @@ struct fat_arch_64 {
 ```
 
 fat header有自己的magic，fat header后跟着多个fat_arch结构体，nfat_arch表示这些结构体的数量（同样区分32位、64位）
-fat_arch则描述了这个fat Mach-O里面有哪几种CPU架构等，以及该架构相对于当前文件的偏移量、大小等
+fat_arch则描述了这个fat Mach-O里面有哪几种CPU架构等，以及该架构相对于当前文件的偏移量、大小等（即对应的Mach-O的偏移量）
 
 ![Fat Header](https://user-images.githubusercontent.com/22512175/147314456-56723b12-3f4e-49bf-bb92-d9d59f2e6ac1.png)
 
 图片该Far Header集成了两种Mach-O，一种是x86_64的，还有ARM64的（ARM的cupsubtype是80000002）
+
+## Load Commands
+

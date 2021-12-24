@@ -132,5 +132,30 @@ struct load_command {
 
 ## Segments && Section
 
+首先看几个相对来说接触的比较多个Segment（同样位于mach/loader.h）
+
+``` C
+#define	SEG_PAGEZERO	"__PAGEZERO"	/* the pagezero segment which has no */
+					/* protections and catches NULL */
+					/* references for MH_EXECUTE files */
+
+#define	SEG_TEXT	"__TEXT"	/* the tradition UNIX text segment */
+
+#define	SEG_DATA	"__DATA"	/* the tradition UNIX data segment */
+
+#define	SEG_OBJC	"__OBJC"	/* objective-C runtime segment */
+
+#define	SEG_LINKEDIT	"__LINKEDIT"	/* the segment containing all structs */
+					/* created and maintained by the link */
+					/* editor.  Created with -seglinkedit */
+					/* option to ld(1) for MH_EXECUTE and */
+					/* FVMLIB file types only */
+```
+
+* SEG_PAGEZERO：当为MH_EXECUTE文件时存在，该区域没有读、写、执行权限，所以指针引向这边会发生crash，一般是64位程序的低32位
+* SEG_TEXT：可读可执行区域，一般用于存放代码以及一些不可变数据
+* SEG_DATA：可读可写数据段
+* SEG_OBJC：Objective-C runtime 段
+* SEG_LINKEDIT：只读权限，存放符号表、entitlements等
 
 

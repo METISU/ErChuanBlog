@@ -105,4 +105,4 @@ fat_arch则描述了这个fat Mach-O里面有哪几种CPU架构等，以及该�
 
 ![Fat Header](https://user-images.githubusercontent.com/22512175/147314456-56723b12-3f4e-49bf-bb92-d9d59f2e6ac1.png)
 
-图片为grep的解析，可见grep集成了两种Mach-O，一种是x86_64的，还有ARM64的（ARM的cupsubtype是80000002）
+图片该Far Header集成了两种Mach-O，一种是x86_64的，还有ARM64的（ARM的cupsubtype是80000002）

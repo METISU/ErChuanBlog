@@ -65,3 +65,73 @@ struct mach_header_64 {
 ![Mach-O](https://user-images.githubusercontent.com/22512175/147305261-e011d0c3-b6c8-409a-af86-83a431ed7cf6.png)
 
 可见这个Mach-O为64位，可运行于x86_64 cpu架构，是一个可执行文件
+
+### Fat Header
+
+Fat Header是对多架构的二进制文件的打包集合，比如同时集成32位以及64位的文件，在**mach-o/fat.h**头文件进行查看
+
+``` C
+#define FAT_MAGIC	0xcafebabe
+#define FAT_CIGAM	0xbebafeca	/* NXSwapLong(FAT_MAGIC) */
+
+struct fat_header {
+	uint32_t	magic;		/* FAT_MAGIC or FAT_MAGIC_64 */
+	uint32_t	nfat_arch;	/* number of structs that follow */
+};
+
+struct fat_arch {
+	cpu_type_t	cputype;	/* cpu specifier (int) */
+	cpu_subtype_t	cpusubtype;	/* machine specifier (int) */
+	uint32_t	offset;		/* file offset to this object file */
+	uint32_t	size;		/* size of this object file */
+	uint32_t	align;		/* alignment as a power of 2 */
+};
+
+#define FAT_MAGIC_64	0xcafebabf
+#define FAT_CIGAM_64	0xbfbafeca	/* NXSwapLong(FAT_MAGIC_64) */
+
+struct fat_arch_64 {
+	cpu_type_t	cputype;	/* cpu specifier (int) */
+	cpu_subtype_t	cpusubtype;	/* machine specifier (int) */
+	uint64_t	offset;		/* file offset to this object file */
+	uint64_t	size;		/* size of this object file */
+	uint32_t	align;		/* alignment as a power of 2 */
+	uint32_t	reserved;	/* reserved */
+};
+```
+
+fat header有自己的magic，fat header后跟着多个fat_arch结构体，nfat_arch表示这些结构体的数量（同样区分32位、64位）
+fat_arch则描述了这个fat Mach-O里面有哪几种CPU架构等，以及该架构相对于当前文件的偏移量、大小等
+
+举个栗子🌰，查看grep的fat header
+
+``` shell
+xxd -l 48 -g 4 grep
+```
+
+输出
+
+```
+00000000: cafebabe 00000002 01000007 00000003  ................
+00000010: 00004000 0000e610 0000000e 0100000c  ..@.............
+00000020: 80000002 00014000 0000e410 0000000e  ......@.........
+```
+
+> 上面指定48字节的原因是可见nfat_arch为2，fat_header为两个uint32_t 8字节，每个fat_arch20字节，nfat_arch为2，表示有2个fat_arch40字节，总共48字节
+
+可见magic为cafebabe，表示32位的fat header，其中包含了两种cputype（01000007、0100000c），第一个Mach-O的偏移量为00004000，可以进行查看
+
+``` shell
+# 每个64位Mach-O大小为32字节
+xxd -l 32 -e -s 16384 grep
+```
+
+输出
+
+```
+00004000: feedfacf 01000007 00000003 00000002  ................
+00004010: 00000014 00000798 00200085 00000000  .......... .....
+```
+
+可见是一个X86_64的Mach-O header
+

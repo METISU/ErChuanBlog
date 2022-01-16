@@ -237,3 +237,243 @@ Breakpoint 2: where = UIKitCore`-[UIViewController viewDidLoad], address = 0x000
 ```
 
 这样即便换了电脑也可以将自己常用的一些复杂断点备份
+
+## 堆栈
+
+堆栈信息也可以在LLDB打印
+
+``` python
+(lldb) help thread
+Commands for operating on one or more threads in the current process.
+
+Syntax: thread <subcommand> [<subcommand-options>]
+
+The following subcommands are supported:
+```
+
+可见`thread`命令可对线程就行操作，比如`thread backtrace`可以打印出当前线程的函数栈
+
+如果想打印某一个具体的栈，可以使用`frame`命令
+
+``` python
+(lldb) help frame
+Commands for selecting and examing the current thread's stack frames.
+
+Syntax: frame <subcommand> [<subcommand-options>]
+
+The following subcommands are supported:
+
+      diagnose   -- Try to determine what path path the current stop location
+                    used to get to a register or address
+      info       -- List information about the current stack frame in the
+                    current thread.
+      recognizer -- Commands for editing and viewing frame recognizers.
+      select     -- Select the current stack frame by index from within the
+                    current thread (see 'thread backtrace'.)
+      variable   -- Show variables for the current stack frame. Defaults to all
+                    arguments and local variables in scope. Names of argument,
+                    local, file static and file global variables can be
+                    specified. Children of aggregate variables can be specified
+                    such as 'var->child.x'.  The -> and [] operators in 'frame
+                    variable' do not invoke operator overloads if they exist,
+                    but directly access the specified element.  If you want to
+                    trigger operator overloads use the expression command to
+                    print the variable instead.
+                    It is worth noting that except for overloaded operators,
+                    when printing local variables 'expr local_var' and 'frame
+                    var local_var' produce the same results.  However, 'frame
+                    variable' is more efficient, since it uses debug
+                    information and memory reads directly, rather than parsing
+                    and evaluating an expression, which may even involve JITing
+                    and running code in the target program.
+
+For more help on any particular subcommand, type 'help <command> <subcommand>'.
+```
+
+比较常用的有`frame info`命令查看当前栈的信息，`frame select`命令选择调用栈，`frame variable`命令查看当前栈的参数（按照msg_send方法来看比如第一个参数为objc、第二个为SEL，后面才是真正传入的）
+
+## image命令
+
+image命令个人在反编译的时候用的比较多，还是首先查看image的介绍
+
+``` python
+(lldb) help image
+Commands for accessing information for one or more target modules.
+
+Syntax: image
+
+'image' is an abbreviation for 'target modules'
+```
+
+从简介可知，image命令是用来访问module的
+
+下面简单介绍几个image常用的命令
+
+``` python
+(lldb) help image lookup
+Look up information within executable and dependent shared library images.
+
+Syntax: target modules lookup <cmd-options> [<filename> [<filename> [...]]]
+
+Command Options Usage:
+  target modules lookup [-Av] -a <address-expression> [-o <offset>] [<filename> [<filename> [...]]]
+  target modules lookup [-Arv] -s <symbol> [<filename> [<filename> [...]]]
+  target modules lookup [-Aiv] -f <filename> [-l <linenum>] [<filename> [<filename> [...]]]
+  target modules lookup [-Airv] -F <function-name> [<filename> [<filename> [...]]]
+  target modules lookup [-Airv] -n <function-or-symbol> [<filename> [<filename> [...]]]
+  target modules lookup [-Av] -t <name> [<filename> [<filename> [...]]]
+
+       -A ( --all )
+            Print all matches, not just the best match, if a best match is
+            available.
+
+       -F <function-name> ( --function <function-name> )
+            Lookup a function by name in the debug symbols in one or more
+            target modules.
+
+       -a <address-expression> ( --address <address-expression> )
+            Lookup an address in one or more target modules.
+
+       -f <filename> ( --file <filename> )
+            Lookup a file by fullpath or basename in one or more target
+            modules.
+
+       -i ( --no-inlines )
+            Ignore inline entries (must be used in conjunction with --file or
+            --function).
+
+       -l <linenum> ( --line <linenum> )
+            Lookup a line number in a file (must be used in conjunction with
+            --file).
+
+       -n <function-or-symbol> ( --name <function-or-symbol> )
+            Lookup a function or symbol by name in one or more target modules.
+
+       -o <offset> ( --offset <offset> )
+            When looking up an address subtract <offset> from any addresses
+            before doing the lookup.
+
+       -r ( --regex )
+            The <name> argument for name lookups are regular expressions.
+
+       -s <symbol> ( --symbol <symbol> )
+            Lookup a symbol by name in the symbol tables in one or more target
+            modules.
+
+       -t <name> ( --type <name> )
+            Lookup a type by name in the debug symbols in one or more target
+            modules.
+
+       -v ( --verbose )
+            Enable verbose lookup information.
+     
+     This command takes options and free-form arguments.  If your arguments
+     resemble option specifiers (i.e., they start with a - or --), you must use
+     ' -- ' between the end of the command options and the beginning of the
+     arguments.
+
+'image' is an abbreviation for 'target modules'
+```
+
+`image lookup`命令通常用来在可执行文件以及加载的动态库里面查找一些信息，比如
+
+``` python
+(lldb) image lookup -vn "-[UIViewController viewDidLoad]"
+1 match found in /Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS.simruntime/Contents/Resources/RuntimeRoot/System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore:
+        Address: UIKitCore[0x000000000050d6d0] (UIKitCore.__TEXT.__text + 5288592)
+        Summary: UIKitCore`-[UIViewController viewDidLoad]
+         Module: file = "/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS.simruntime/Contents/Resources/RuntimeRoot/System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore", arch = "x86_64"
+         Symbol: id = {0x000066cf}, range = [0x00007fff248416d0-0x00007fff248416d6), name="-[UIViewController viewDidLoad]"
+```
+
+可见`UIViewController`的`viewDidLoad`方法在UIKitCore的__text section偏移5288592处，在虚拟内存中的位置为0x00007fff248416d0，使用image lookup -a进行验证
+
+``` python
+(lldb) image lookup -a 0x00007fff248416d0
+      Address: UIKitCore[0x000000000050d6d0] (UIKitCore.__TEXT.__text + 5288592)
+      Summary: UIKitCore`-[UIViewController viewDidLoad]
+```
+
+同样的，image命令也支持正则表达式，可见上面的`-r` option ，使用正则表达式可以搜索一些很有意思的系统私有函数
+
+## Watchpoints
+
+watchpoint，简单的来说，就是可以监控指定的内存，当对这块内存进行读取以及写入的时候暂停执行
+
+设置watchpoint同样有两种方法
+
+### 通过GUI设置watchpoint
+
+![watchpoint_gui](https://user-images.githubusercontent.com/22512175/149658687-10c565d4-15fd-4512-a945-dd1858e077a4.png)
+
+如图，在debug界面右键点击想要观察的属性，然后点击watch"xxx"即可
+
+### 命令行设置watchpoint
+
+同样的，也可以使用命令行设置watchpoint
+
+``` python
+(lldb) help watchpoint
+Commands for operating on watchpoints.
+
+Syntax: watchpoint <subcommand> [<command-options>]
+
+The following subcommands are supported:
+
+      command -- Commands for adding, removing and examining LLDB commands
+                 executed when the watchpoint is hit (watchpoint 'commands').
+      delete  -- Delete the specified watchpoint(s).  If no watchpoints are
+                 specified, delete them all.
+      disable -- Disable the specified watchpoint(s) without removing it/them. 
+                 If no watchpoints are specified, disable them all.
+      enable  -- Enable the specified disabled watchpoint(s). If no watchpoints
+                 are specified, enable all of them.
+      ignore  -- Set ignore count on the specified watchpoint(s).  If no
+                 watchpoints are specified, set them all.
+      list    -- List all watchpoints at configurable levels of detail.
+      modify  -- Modify the options on a watchpoint or set of watchpoints in
+                 the executable.  If no watchpoint is specified, act on the
+                 last created watchpoint.  Passing an empty argument clears the
+                 modification.
+      set     -- Commands for setting a watchpoint.
+
+For more help on any particular subcommand, type 'help <command> <subcommand>'.
+```
+
+可以看到watchpoint其实和普通的断点十分相像，都存在delete、disable等，接下来看一个示例
+
+``` python
+// 注意：0x7f8ad4707d30为对象指针的地址，举个栗子比如当前类有个属性sex，是NSString类型，地址为0x000000010609b0c8，但是这个地址是存储这个String的地址，不是对象属性的地址，所以需要对sex取地址
+(lldb) watchpoint set expression -- 0x7f93c1309da0
+```
+
+默认为写入进入watchpoint时触发，也可以设置为读写触发，详情可看`set` option
+
+## LLDB Script
+
+最后算是一个重头戏，自定义LLDB脚本，LLDB启动的时候会加载 **~/.lldbinit** 里的内容，在这里面可以添加一些常用的命令，并使用 **alias** 设置别名方便使用，当然还有更方便的使用方法，使用 **regex** 正则表达式，可以有更大的发挥空间，比如
+
+``` python
+command regex ivars 's/(.+)/expression -lobjc -O -- [%1 _ivarDescription]/'
+```
+
+以上命令的作用是打印出当前对象的所有ivars，输出
+
+``` python
+(lldb) ivars self.sex
+<__NSCFConstantString: 0x10609b148>:
+in __NSCFConstantString:
+in __NSCFString:
+in NSMutableString:
+in NSString:
+in NSObject:
+	isa (Class): __NSCFConstantString (isa, 0x7fff862da668)
+```
+
+当然，看这个表达式就能知道这其实调用了一个系统方法
+
+我们也可以编写自己的LLDB脚本，使用python编写，官方文档（），脚本学习曲线较抖，个人也属于初学者，这边就不在赘序了，感兴趣的同学可以自行翻阅文档以及网上资料，并且有很多大神也已经完成了大部分常用的脚本，可以参考学习
+
+脚本编写完成之后，可以在~/lldbinit文件中通过`command script import`脚本加入，当然网上也有更方便的方法（其实是写了一个python脚本实现了自动化）
+
+> 最后: LLDB其实是我们日常工作中最常用工具之一了，至此这些用法其实也是对自己的一个总结，因为里面一些命令其实没那么常用，导致自己也经常翻阅以前的笔记&文档，这也算一个记录
